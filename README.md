@@ -1,24 +1,31 @@
 # Competitor Briefing Agent
 
-A small LangChain + LangGraph project that takes 2-3 competitor names and
-website URLs, fetches each site's content, extracts pricing/features/positioning
-with an LLM, and compiles everything into one structured briefing.
+A small LangChain + LangGraph project that takes 2-3 competitor names, finds
+each one's website automatically, fetches its content, extracts
+pricing/features/positioning with an LLM, and compiles everything into one
+structured briefing.
 
 ## Scope
 
 **In scope:**
-- Accept competitor name + URL pairs (via `graph.py` for a fixed list, or `app.py` for a Streamlit form)
+- Accept competitor names (via `graph.py` for a fixed list, or `app.py` for a Streamlit form)
+- Search (DuckDuckGo, no API key needed) to find each competitor's homepage automatically
 - Fetch each competitor's webpage content
-- Use an LLM (Groq, running Llama 3.3) with structured output to extract pricing, core features, and market positioning
+- Use an LLM (Groq) with structured output to extract pricing, core features, and market positioning
 - Loop through all competitors, one at a time, using a LangGraph queue/router pattern
 - Compile results into one combined briefing (`briefing.md` for the terminal version, expandable cards for the Streamlit version)
-- Handle failures gracefully: a bad URL or a failed LLM call produces a "Data not found" placeholder for that competitor instead of crashing the whole run
+- Handle failures gracefully: a failed search, bad URL, or failed LLM call produces a "Data not found" placeholder for that competitor instead of crashing the whole run
 
 **Out of scope:**
-- Automatic competitor discovery (you provide the names/URLs yourself — no search API)
+- Automatic competitor *discovery* — you still provide the names yourself; only the URL lookup is automated
 - News search / recent announcements
 - Saving to a database, exporting to PDF/CSV, or sending anything anywhere
 - Any action taken based on the findings — the workflow stops after producing the briefing; a human reads and decides what to do with it
+
+**Known limitation:** the search step picks the top result whose domain matches
+the company name. This works well for specific product/company names (e.g.
+"Airtable", "Superhuman") but can pick the wrong site for a name that's also a
+common English word or overlaps with an unrelated well-known topic.
 
 ## Files
 
@@ -53,7 +60,7 @@ with an LLM, and compiles everything into one structured briefing.
    Get a free key at console.groq.com/keys.
 
 4. **Run it**
-   - Terminal version (edit the `COMPANIES` list near the top of `graph.py` with your real competitors first):
+   - Terminal version (edit the `COMPANIES` list near the top of `graph.py` with your real competitor names first):
      ```
      ./venv/bin/python graph.py
      ```
@@ -61,7 +68,7 @@ with an LLM, and compiles everything into one structured briefing.
      ```
      ./venv/bin/streamlit run app.py
      ```
-     Opens in your browser. Enter 2-3 competitor names + URLs and click "Run Research Pipeline."
+     Opens in your browser. Enter 2-3 competitor names and click "Run Research Pipeline" — no URLs needed.
 
 ## Validation Checklist
 
@@ -81,11 +88,12 @@ with an LLM, and compiles everything into one structured briefing.
 |---|---|---|
 | `GROQ_API_KEY not found` | Missing/empty `.env` | Add real key to `.env` |
 | Rate limit / quota error | Groq's free tier has request limits too, though more generous than Gemini's | Wait a bit and retry; check console.groq.com for your current limits |
-| A competitor shows all "Data not found" fields | Either its page failed to fetch, or its content is JS-rendered (marketing sites often are) and `WebBaseLoader` only sees static HTML | Try a different URL for that competitor (e.g. a docs or about page) |
+| A competitor shows all "Data not found" fields | Either search picked the wrong site, the page failed to fetch, or its content is JS-rendered (marketing sites often are) and `WebBaseLoader` only sees static HTML | Check what URL was found in the printed/displayed logs; try a more specific company name if search picked the wrong site |
+| Search finds the wrong website | The company name is a common word or overlaps with an unrelated topic (e.g. "Flask") | Use a more specific/full company name |
 
 ## Extension Ideas
 
 - Add retry-with-backoff before falling back on rate-limit errors
-- Add a proper competitor-discovery step (would need a search API)
+- Add a full competitor-*discovery* step (auto-suggest competitors from your own company name, not just look up URLs for names you give it)
 - Export the briefing to PDF
-- Cache fetched pages to avoid re-fetching on repeated runs
+- Cache fetched pages and search results to avoid re-fetching on repeated runs
