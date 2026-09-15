@@ -7,7 +7,7 @@ os.environ.setdefault("USER_AGENT", "competitor-briefing-agent/0.1 (course proje
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
@@ -41,7 +41,7 @@ docs = loader.load()
 page_text = docs[0].page_content[:5000]  # keep it short for now
 
 # Step 2: extract structured info with the LLM
-llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash")
+llm = ChatGroq(model="openai/gpt-oss-120b")
 structured_llm = llm.with_structured_output(CompetitorInfo)
 
 result = structured_llm.invoke(

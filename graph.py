@@ -10,7 +10,7 @@ os.environ.setdefault("USER_AGENT", "competitor-briefing-agent/0.1 (course proje
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, START, END
 
 load_dotenv()
@@ -47,7 +47,7 @@ from the raw web page text below. If you cannot find a specific detail, write \
 'Data not found' for that field. Do not invent facts. Do not exaggerate. \
 Report only what is present in the text."""
 
-llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash")
+llm = ChatGroq(model="openai/gpt-oss-120b")
 structured_llm = llm.with_structured_output(CompetitorInfo)
 
 

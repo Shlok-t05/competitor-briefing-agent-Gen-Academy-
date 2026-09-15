@@ -1,6 +1,6 @@
 langchain
 langgraph
-langchain-google-genai
+langchain-groq
 python-dotenv
 langchain-community
 beautifulsoup4

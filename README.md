@@ -9,7 +9,7 @@ with an LLM, and compiles everything into one structured briefing.
 **In scope:**
 - Accept competitor name + URL pairs (via `graph.py` for a fixed list, or `app.py` for a Streamlit form)
 - Fetch each competitor's webpage content
-- Use an LLM (Gemini) with structured output to extract pricing, core features, and market positioning
+- Use an LLM (Groq, running Llama 3.3) with structured output to extract pricing, core features, and market positioning
 - Loop through all competitors, one at a time, using a LangGraph queue/router pattern
 - Compile results into one combined briefing (`briefing.md` for the terminal version, expandable cards for the Streamlit version)
 - Handle failures gracefully: a bad URL or a failed LLM call produces a "Data not found" placeholder for that competitor instead of crashing the whole run
@@ -24,7 +24,7 @@ with an LLM, and compiles everything into one structured briefing.
 
 | File | Purpose |
 |---|---|
-| `test_api_key.py` | Sanity check that your Gemini API key works |
+| `test_api_key.py` | Sanity check that your Groq API key works |
 | `fetch_page.py` | Standalone test of fetching one webpage's text |
 | `extract_info.py` | Standalone test of structured LLM extraction on one page |
 | `graph.py` | Full pipeline as a terminal script — loops over a hardcoded company list, writes `briefing.md` |
@@ -48,9 +48,9 @@ with an LLM, and compiles everything into one structured briefing.
    ```
    Then edit `.env` and paste your real key:
    ```
-   GOOGLE_API_KEY=your-real-key-here
+   GROQ_API_KEY=your-real-key-here
    ```
-   Get a free key at aistudio.google.com/apikey.
+   Get a free key at console.groq.com/keys.
 
 4. **Run it**
    - Terminal version (edit the `COMPANIES` list near the top of `graph.py` with your real competitors first):
@@ -66,7 +66,7 @@ with an LLM, and compiles everything into one structured briefing.
 ## Validation Checklist
 
 **Before running:**
-- [ ] `.env` exists with a real `GOOGLE_API_KEY`
+- [ ] `.env` exists with a real `GROQ_API_KEY`
 - [ ] Virtual environment activated / using `./venv/bin/python`
 - [ ] Dependencies installed (`./venv/bin/pip install -r requirements.txt`)
 
@@ -79,9 +79,8 @@ with an LLM, and compiles everything into one structured briefing.
 
 | Failure | Likely Cause | Fix |
 |---|---|---|
-| `GOOGLE_API_KEY not found` | Missing/empty `.env` | Add real key to `.env` |
-| `429 RESOURCE_EXHAUSTED` | Gemini free tier is capped at 20 requests/day per model | Wait for daily quota reset, or use a different Google account/key |
-| `503 UNAVAILABLE` | Gemini servers temporarily overloaded | Usually transient — retry in a minute |
+| `GROQ_API_KEY not found` | Missing/empty `.env` | Add real key to `.env` |
+| Rate limit / quota error | Groq's free tier has request limits too, though more generous than Gemini's | Wait a bit and retry; check console.groq.com for your current limits |
 | A competitor shows all "Data not found" fields | Either its page failed to fetch, or its content is JS-rendered (marketing sites often are) and `WebBaseLoader` only sees static HTML | Try a different URL for that competitor (e.g. a docs or about page) |
 
 ## Extension Ideas

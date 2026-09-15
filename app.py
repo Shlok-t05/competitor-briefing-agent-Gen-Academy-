@@ -18,7 +18,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, START, END
 
 load_dotenv()
@@ -160,15 +160,15 @@ def main():
             companies.append({"name": name, "url": url})
 
     if st.button("Run Research Pipeline"):
-        if not os.getenv("GOOGLE_API_KEY"):
-            st.error("GOOGLE_API_KEY not found in .env file.")
+        if not os.getenv("GROQ_API_KEY"):
+            st.error("GROQ_API_KEY not found in .env file.")
             return
 
         if len(companies) < 2:
             st.warning("Please enter at least 2 competitors (name + URL).")
             return
 
-        llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash")
+        llm = ChatGroq(model="openai/gpt-oss-120b")
         structured_llm = llm.with_structured_output(CompetitorInfo)
         graph = build_graph(structured_llm)
 
